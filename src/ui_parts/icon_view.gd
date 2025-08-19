@@ -13,7 +13,7 @@ const TileScene = preload("res://src/ui_widgets/icon_view_tile.tscn")
 
 
 var needs_update := false
-var selected_tile: int
+var selected_tile
 
 
 func _ready() -> void:
@@ -58,13 +58,13 @@ func _create_new_tile(new_size: int) -> Tile:
 		_update_savedata()
 	)
 	tile.selected.connect(func():
-		selected_tile = tile.get_index()
+		selected_tile = tile
 		texture_rect.texture = tile.texture
 		scaled_preview.show()
 		_update_texture_rect_size()
 	)
 	tile.texture_changed.connect(func():
-		if tile.get_index() == selected_tile:
+		if tile == selected_tile:
 			texture_rect.texture = tile.texture
 			_update_texture_rect_size()
 	)
@@ -80,8 +80,8 @@ func update_tiles() -> void:
 	var svg_text := SVGParser.root_to_export_markup(State.root_element)
 	for child: Tile in icon_view_tile_container.get_children():
 		child.svg_markup = State.svg_text
-	if selected_tile >= 0 and selected_tile < icon_view_tile_container.get_child_count():
-		texture_rect.texture = icon_view_tile_container.get_child(selected_tile).texture
+	if selected_tile:
+		texture_rect.texture = selected_tile.texture
 		_update_texture_rect_size()
 
 
@@ -105,6 +105,8 @@ func _delete_tiles() -> void:
 
 
 func _delete_tile(tile: Tile) -> void:
+	if tile == selected_tile:
+		scaled_preview.hide()
 	icon_view_tile_container.remove_child(tile)
 	tile.queue_free()
 
